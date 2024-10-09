@@ -1,6 +1,14 @@
 const mongoose = require('mongoose');
 
 const fileSchema = new mongoose.Schema({
+  name: {
+    type: String
+  },
+  email: {
+    type: String,
+    required: true,
+
+  },
   filename: {
     type: String,
     required: true

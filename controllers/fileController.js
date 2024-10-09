@@ -1,35 +1,51 @@
 const path = require('path');
-const File = require('../models/fileModel'); // Import the file model
+const File = require('../models/fileModel'); 
 
-// Handle file upload and save to DB
 exports.uploadFile = async (req, res) => {
-  if (!req.file) {
-    return res.status(400).json({ message: 'No file uploaded!' });
+  const { name, email } = req.body;
+
+  if (!name || !email || !req.file) {
+    return res.status(400).json({ message: 'Name, Email and file are required!' });
   }
 
-  // Save file metadata to the database
   try {
     const newFile = new File({
+      name: name,     
+      email: email,           
       filename: req.file.filename,
-      filepath: req.file.path,   // Actual file path saved in the server
+      filepath: req.file.path,    
       filetype: req.file.mimetype,
       filesize: req.file.size
     });
     
     const savedFile = await newFile.save();
 
-    // Construct file URL
     const fileUrl = `${req.protocol}://${req.get('host')}/upload/${req.file.filename}`;
 
     res.status(200).json({
       message: 'File uploaded successfully!',
-      file: savedFile,  // Send saved file info
-      fileUrl: fileUrl
+      file: savedFile, 
+      fileUrl: fileUrl 
     });
   } catch (err) {
     res.status(500).json({
-      message: 'Error saving file to database',
+      message: 'Error saving file to the database',
       error: err.message
     });
   }
 };
+
+
+exports.downloadFile = (req, res) => {
+  const filename = req.params.filename;
+
+  const filePath = path.join(__dirname, '..', 'upload', filename); 
+
+  res.download(filePath, (err) => {
+    if (err) {
+      return res.status(500).json({ message: 'Error downloading file', error: err.message });
+    }
+  });
+};
+
+
